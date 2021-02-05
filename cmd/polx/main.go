@@ -11,11 +11,8 @@ import (
 // TODO: check resources being handled correctly
 
 var (
-	//Version holds current application version
-	Version string
-	//Build holds application build sha
-	Build string
-	//BuildDate holds application build date
+	Version   string
+	Build     string
 	BuildDate string
 )
 
