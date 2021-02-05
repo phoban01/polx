@@ -1,17 +1,5 @@
 # IAM Policy eXporter
 
-### Test
-
-`make test`
-
-### Build
-
-`make build`
-
-### Install
-
-`make install`
-
 ```
 polx helps generate IAM policies
 
@@ -54,3 +42,15 @@ Flags:
       --username string        Filter Events by Username
   -w, --window int             How far back in the audit trail to look for events (minutes) (default 30)
 ```
+
+### Test
+
+`make test`
+
+### Build
+
+`make build`
+
+### Install
+
+`make install`
