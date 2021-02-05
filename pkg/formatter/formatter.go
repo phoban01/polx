@@ -1,4 +1,4 @@
-package parser
+package formatter
 
 import (
 	"crypto/sha256"
@@ -9,47 +9,45 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudtrail"
 )
 
-type policy struct {
+type Policy struct {
 	Version   string       `json:"Version"`
-	Statement []*statement `json:"Statement"`
+	Statement []*Statement `json:"Statement"`
 }
 
-type statement struct {
+type Statement struct {
 	Effect   string   `json:"Effect"`
 	Action   []string `json:"Action"`
 	Resource []string `json:"Resource"`
 }
 
-func FormatAsIAMPolicy(events []*cloudtrail.Event) ([]byte, error) {
-	var allSt []*statement
+func FormatAsIAMPolicy(events []*cloudtrail.Event) *Policy {
+	var allSt []*Statement
 	for _, e := range events {
-		act := fmt.Sprintf("%s:%s", strings.TrimSuffix(*e.EventSource, ".amazonaws.com"), *e.EventName)
-		st := &statement{
-			Effect: "Allow",
-			Action: []string{act},
-		}
-		var hasResource bool
+		var resources []string
 		for _, r := range e.Resources {
 			if strings.HasPrefix(*r.ResourceName, "arn") {
-				st.Resource = append(st.Resource, *r.ResourceName)
-				hasResource = true
+				resources = append(resources, *r.ResourceName)
 			}
 		}
-		if hasResource != true {
-			st.Resource = []string{"*"}
+		if len(resources) == 0 {
+			resources = []string{"*"}
 		}
-		allSt = append(allSt, st)
+		action := fmt.Sprintf("%s:%s", strings.TrimSuffix(*e.EventSource, ".amazonaws.com"), *e.EventName)
+		allSt = append(allSt, &Statement{
+			Effect:   "Allow",
+			Action:   []string{action},
+			Resource: resources,
+		})
 	}
 	uniqSt := uniq(allSt)
 	group := group(uniqSt)
-	p := &policy{
+	return &Policy{
 		Version:   "2012-10-17",
 		Statement: group,
 	}
-	return json.MarshalIndent(p, "", "  ")
 }
 
-func uniq(statements []*statement) (result []*statement) {
+func uniq(statements []*Statement) (result []*Statement) {
 	hashList := make(map[string]struct{})
 	for _, st := range statements {
 		hash := sha256.New()
@@ -63,7 +61,15 @@ func uniq(statements []*statement) (result []*statement) {
 	return
 }
 
-func group(statements []*statement) (result []*statement) {
+func (p *Policy) String() (string, error) {
+	b, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func group(statements []*Statement) (result []*Statement) {
 	serviceMap := make(map[string][]string)
 	for _, st := range statements {
 		if st.Resource[0] != "*" {
@@ -74,7 +80,7 @@ func group(statements []*statement) (result []*statement) {
 		}
 	}
 	for _, v := range serviceMap {
-		result = append(result, &statement{
+		result = append(result, &Statement{
 			Effect:   "Allow",
 			Action:   v,
 			Resource: []string{"*"},

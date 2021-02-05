@@ -2,41 +2,54 @@ package ct
 
 import (
 	"fmt"
-	"time"
+	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/phoban01/rolex/pkg/parser"
+	"github.com/aws/aws-sdk-go/service/cloudtrail"
+	"github.com/phoban01/polx/pkg/formatter"
 	"github.com/spf13/cobra"
 )
 
 func Command() *cobra.Command {
-	opts := CloudTrailOpts{
-		Start: aws.Time(time.Now().Add(time.Minute * -120)),
-		End:   aws.Time(time.Now()),
-		// AccessKeyID: aws.String("AKIA4OIXKKYIDGP364BO"),
-		// AccessKeyID: aws.String("AKIA4OIXKKYIFPEXEAV7"),
-		Username: aws.String("iamadmin"),
-	}
+	sessOpts := new(SessionOpts)
+	opts := new(CloudTrailOpts)
 	c := &cobra.Command{
-		Use:   "policy",
+		Use:   "ct",
 		Short: "Create IAM Policy from Cloudtrail audit trail",
+		Long:  "Credentials can be specified using $AWS_PROFILE environment variable or using the --profile flag",
+		Example: `
+	# Build policy for all events in last hour
+	polx ct --window 60 --profile aws-admin-profile
+
+	# Build policy for events associated with access key
+	polx ct --window 60 --profile aws-admin-profile --access-key-id XXXX-XXXXXX-XXX
+`,
 		Run: func(cmd *cobra.Command, args []string) {
-			events, err := GetLogsForPeriod(&opts)
+			sess := NewSession(sessOpts)
+			client := cloudtrail.New(sess)
+			events, err := GetLogsForPeriod(client, opts)
 			if err != nil {
-				panic(err)
+				fmt.Printf("ERROR: %s", err)
+				os.Exit(1)
 			}
-			policy, err := parser.FormatAsIAMPolicy(events)
+			if len(events) == 0 {
+				fmt.Printf("Warning: No events found for time period\n")
+				os.Exit(0)
+			}
+			policy := formatter.FormatAsIAMPolicy(events)
+			response, err := policy.String()
 			if err != nil {
-				panic(err)
+				fmt.Printf("ERROR: %s", err)
+				os.Exit(1)
 			}
-			fmt.Println(policy)
+			fmt.Printf("%s\n", response)
 		},
 	}
 
-	c.Flags().IntVarP(opts.Lookback, "lookback", "l", 30, "How far back in the audit trail to look for events (minutes)")
-	c.Flags().StringVar(opts.AccessKeyID, "access-key-id", "", "Filter Events by Access Key ID")
-	c.Flags().StringVar(opts.Username, "username", "", "Filter Events by Username")
-	c.Flags().StringVar(opts.AwsProfile, "profile", "", "The profile which will make CloudTrail API calls")
+	c.Flags().StringVar(&sessOpts.AwsProfile, "profile", "", "The profile which will make CloudTrail API calls")
+	c.Flags().StringVar(&sessOpts.Region, "region", "us-east-1", "AWS Region")
+	c.Flags().StringVar(&opts.AccessKeyID, "access-key-id", "", "Filter Events by AccessKeyId")
+	c.Flags().IntVarP(&opts.Window, "window", "w", 30, "How far back in the audit trail to look for events (minutes)")
+	c.Flags().StringVar(&opts.Username, "username", "", "Filter Events by Username")
 
 	return c
 }

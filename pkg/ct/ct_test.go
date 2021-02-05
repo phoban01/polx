@@ -2,15 +2,32 @@ package ct
 
 import (
 	"testing"
-	"time"
 
 	"github.com/alecthomas/assert"
+	"github.com/aws/aws-sdk-go/service/cloudtrail"
+	"github.com/aws/aws-sdk-go/service/cloudtrail/cloudtrailiface"
 )
 
-func TestGetLogsForPeriod(t *testing.T) {
-	start := time.Now()
-	end := time.Now()
-	got := GetLogsForPeriod(start, end)
+type mockCloudTrailClient struct {
+	cloudtrailiface.CloudTrailAPI
+}
 
-	assert.IsType(t, got, []string{})
+func (m *mockCloudTrailClient) LookupEvents(input *cloudtrail.LookupEventsInput) (resp *cloudtrail.LookupEventsOutput, err error) {
+	resp = &cloudtrail.LookupEventsOutput{
+		Events: []*cloudtrail.Event{},
+	}
+	return
+}
+
+func TestGetLogsForPeriod(t *testing.T) {
+	t.Helper()
+
+	client := &mockCloudTrailClient{}
+
+	t.Run("It returns a slice of events", func(t *testing.T) {
+		want := []*cloudtrail.Event{}
+		got, err := GetLogsForPeriod(client, &CloudTrailOpts{})
+		assert.IsType(t, want, got)
+		assert.NoError(t, err)
+	})
 }
