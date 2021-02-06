@@ -48,7 +48,7 @@ func Command() *cobra.Command {
 	c.Flags().StringVar(&sessOpts.AwsProfile, "profile", "", "The profile which will make CloudTrail API calls")
 	c.Flags().StringVar(&sessOpts.Region, "region", "us-east-1", "AWS Region")
 	c.Flags().StringVar(&opts.AccessKeyID, "access-key-id", "", "Filter Events by AccessKeyId")
-	c.Flags().IntVarP(&opts.Window, "window", "w", 30, "How far back in the audit trail to look for events (minutes)")
+	c.Flags().IntVarP(&opts.Window, "window", "w", 30, "How far back in the audit log to look for events (minutes)")
 	c.Flags().StringVar(&opts.Username, "username", "", "Filter Events by Username")
 
 	return c
