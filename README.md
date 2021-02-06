@@ -1,5 +1,9 @@
 # IAM Policy eXporter
 
+### About
+
+polx is tool that can help in generating least-privilege IAM policies.
+
 ```
 polx helps generate IAM policies
 
@@ -18,6 +22,11 @@ Use "polx [command] --help" for more information about a command.
 ```
 
 ### CloudTrail
+
+**Note that events can take ~15 minutes before they appear in the CloudTrail event log**
+
+The `polx ct` command will generate an AWS IAM profile from the CloudTrail event log. You can specify the lookback window and filter
+using a `username` or `AccessKeyId`.
 
 ```
 Credentials can be specified using $AWS_PROFILE environment variable or using the --profile flag
