@@ -47,6 +47,14 @@ func FormatAsIAMPolicy(events []*cloudtrail.Event) *Policy {
 	}
 }
 
+func (p *Policy) String() (string, error) {
+	b, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
 func uniq(statements []*Statement) (result []*Statement) {
 	hashList := make(map[string]struct{})
 	for _, st := range statements {
@@ -59,14 +67,6 @@ func uniq(statements []*Statement) (result []*Statement) {
 		}
 	}
 	return
-}
-
-func (p *Policy) String() (string, error) {
-	b, err := json.MarshalIndent(p, "", "  ")
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
 }
 
 func group(statements []*Statement) (result []*Statement) {
