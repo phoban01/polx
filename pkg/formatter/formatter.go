@@ -79,10 +79,10 @@ func group(statements []*Statement) (result []*Statement) {
 			serviceMap[service] = append(serviceMap[service], st.Action[0])
 		}
 	}
-	for _, v := range serviceMap {
+	for _, act := range serviceMap {
 		result = append(result, &Statement{
 			Effect:   "Allow",
-			Action:   v,
+			Action:   act,
 			Resource: []string{"*"},
 		})
 	}
