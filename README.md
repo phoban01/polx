@@ -26,7 +26,7 @@ Use "polx [command] --help" for more information about a command.
 **Note that events can take ~15 minutes before they appear in the CloudTrail event log**
 
 The `polx ct` command will generate an AWS IAM profile from the CloudTrail event log. You can specify the lookback window and filter
-using a `username` or `AccessKeyId`.
+using a `username` or `AccessKeyId`. The user which `polx` runs as can be specified using the `AWS_PROFILE` environment variable or `--profile` flag. This user should have the appropriate CloudTrail permissions assigned.
 
 ```
 Credentials can be specified using $AWS_PROFILE environment variable or using the --profile flag
