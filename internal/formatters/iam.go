@@ -1,4 +1,4 @@
-package formatter
+package formatters
 
 import (
 	"crypto/sha256"
@@ -9,19 +9,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudtrail"
 )
 
-type Policy struct {
-	Version   string       `json:"Version"`
-	Statement []*Statement `json:"Statement"`
+type IAMPolicy struct {
+	Version            string                `json:"Version"`
+	IAMPolicyStatement []*IAMPolicyStatement `json:"IAMPolicyStatement"`
 }
 
-type Statement struct {
+type IAMPolicyStatement struct {
 	Effect   string   `json:"Effect"`
 	Action   []string `json:"Action"`
 	Resource []string `json:"Resource"`
 }
 
-func FormatAsIAMPolicy(events []*cloudtrail.Event) *Policy {
-	var allSt []*Statement
+func FormatAsIAMPolicy(events []*cloudtrail.Event) *IAMPolicy {
+	var allSt []*IAMPolicyStatement
 	for _, e := range events {
 		var resources []string
 		for _, r := range e.Resources {
@@ -33,7 +33,7 @@ func FormatAsIAMPolicy(events []*cloudtrail.Event) *Policy {
 			resources = []string{"*"}
 		}
 		action := fmt.Sprintf("%s:%s", strings.TrimSuffix(*e.EventSource, ".amazonaws.com"), *e.EventName)
-		allSt = append(allSt, &Statement{
+		allSt = append(allSt, &IAMPolicyStatement{
 			Effect:   "Allow",
 			Action:   []string{action},
 			Resource: resources,
@@ -41,13 +41,13 @@ func FormatAsIAMPolicy(events []*cloudtrail.Event) *Policy {
 	}
 	uniqSt := uniq(allSt)
 	group := group(uniqSt)
-	return &Policy{
-		Version:   "2012-10-17",
-		Statement: group,
+	return &IAMPolicy{
+		Version:            "2012-10-17",
+		IAMPolicyStatement: group,
 	}
 }
 
-func (p *Policy) String() (string, error) {
+func (p *IAMPolicy) String() (string, error) {
 	b, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
 		return "", err
@@ -55,7 +55,7 @@ func (p *Policy) String() (string, error) {
 	return string(b), nil
 }
 
-func uniq(statements []*Statement) (result []*Statement) {
+func uniq(statements []*IAMPolicyStatement) (result []*IAMPolicyStatement) {
 	hashList := make(map[string]struct{})
 	for _, st := range statements {
 		hash := sha256.New()
@@ -69,7 +69,7 @@ func uniq(statements []*Statement) (result []*Statement) {
 	return
 }
 
-func group(statements []*Statement) (result []*Statement) {
+func group(statements []*IAMPolicyStatement) (result []*IAMPolicyStatement) {
 	serviceMap := make(map[string][]string)
 	for _, st := range statements {
 		if st.Resource[0] != "*" {
@@ -80,7 +80,7 @@ func group(statements []*Statement) (result []*Statement) {
 		}
 	}
 	for _, act := range serviceMap {
-		result = append(result, &Statement{
+		result = append(result, &IAMPolicyStatement{
 			Effect:   "Allow",
 			Action:   act,
 			Resource: []string{"*"},

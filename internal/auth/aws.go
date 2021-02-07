@@ -1,4 +1,4 @@
-package ct
+package auth
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -6,12 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-type SessionOpts struct {
+type AWSSessionOpts struct {
 	Region     string
 	AwsProfile string
 }
 
-func NewSession(opts *SessionOpts) *session.Session {
+func NewAWSSession(opts *AWSSessionOpts) *session.Session {
 	config := aws.Config{
 		Region: aws.String(opts.Region),
 	}

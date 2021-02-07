@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/phoban01/polx/pkg/ct"
+	"github.com/phoban01/polx/cmd/ct"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +36,7 @@ func version() *cobra.Command {
 		Use:   "version",
 		Short: "Polx helps generate IAM policies",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("polx 🔑\nversion %s\nbuild: %s\nbuild date: %s\n", Version, Build, BuildDate)
+			fmt.Fprintf(os.Stdout, "polx 🔑\nversion %s\nbuild: %s\nbuild date: %s\n", Version, Build, BuildDate)
 		},
 	}
 	return cmd

@@ -10,13 +10,13 @@ build:
 		-ldflags "-X main.Version=${VERSION} \
 				  -X main.Build=${BUILD} \
 				  -X main.BuildDate=${BUILD_DATE}" \
-		-o bin/${NAME} ./cmd/${NAME}
+		-o bin/${NAME} .
 
 install:
 	@go install \
 		-ldflags "-X main.Version=${VERSION} \
 				  -X main.Build=${BUILD} \
 				  -X main.BuildDate=${BUILD_DATE}" \
-		./cmd/${NAME}
+		.
 test:
-	@gotest -v ./pkg/**
+	@gotest -v ./cmd/**

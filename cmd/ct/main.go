@@ -5,12 +5,13 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/service/cloudtrail"
-	"github.com/phoban01/polx/pkg/formatter"
+	"github.com/phoban01/polx/internal/auth"
+	"github.com/phoban01/polx/internal/formatters"
 	"github.com/spf13/cobra"
 )
 
 func Command() *cobra.Command {
-	sessOpts := new(SessionOpts)
+	sessOpts := new(auth.AWSSessionOpts)
 	opts := new(CloudTrailOpts)
 	c := &cobra.Command{
 		Use:   "ct",
@@ -24,7 +25,7 @@ func Command() *cobra.Command {
 	polx ct --window 60 --profile aws-admin-profile --access-key-id XXXX-XXXXXX-XXX
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			sess := NewSession(sessOpts)
+			sess := auth.NewAWSSession(sessOpts)
 			client := cloudtrail.New(sess)
 			events, err := GetLogsForPeriod(client, opts)
 			if err != nil {
@@ -35,7 +36,7 @@ func Command() *cobra.Command {
 				fmt.Printf("Warning: No events found for time period\n")
 				os.Exit(0)
 			}
-			policy := formatter.FormatAsIAMPolicy(events)
+			policy := formatters.FormatAsIAMPolicy(events)
 			response, err := policy.String()
 			if err != nil {
 				fmt.Printf("ERROR: %s", err)

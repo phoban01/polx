@@ -1,4 +1,4 @@
-package formatter
+package formatters
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 
 const policyFixture = `{
   "Version": "2012-10-17",
-  "Statement": [
+  "IAMPolicyStatement": [
     {
       "Effect": "Allow",
       "Action": [
@@ -23,7 +23,7 @@ const policyFixture = `{
   ]
 }`
 
-func TestParser(t *testing.T) {
+func TestFormatAsIAMPolicy(t *testing.T) {
 	t.Helper()
 	events := []*cloudtrail.Event{
 		&cloudtrail.Event{
@@ -32,18 +32,18 @@ func TestParser(t *testing.T) {
 		},
 	}
 
-	mockPolicy := &Policy{
+	mockIAMPolicy := &IAMPolicy{
 		Version: "2012-10-17",
-		Statement: []*Statement{&Statement{
+		IAMPolicyStatement: []*IAMPolicyStatement{&IAMPolicyStatement{
 			Effect:   "Allow",
 			Action:   []string{"cloudtrail:LookupEvents"},
 			Resource: []string{"*"},
 		}},
 	}
 
-	t.Run("Returns an IAM Policy from a slice of events", func(t *testing.T) {
-		got := FormatAsIAMPolicy(events)
-		assert.Equal(t, got, mockPolicy)
+	t.Run("Returns an IAM IAMPolicy from a slice of events", func(t *testing.T) {
+		got := FormatAsIAMIAMPolicy(events)
+		assert.Equal(t, got, mockIAMPolicy)
 	})
 
 }
@@ -57,8 +57,8 @@ func TestString(t *testing.T) {
 		},
 	}
 
-	t.Run("Prints a Policy as a correctly formatted string", func(t *testing.T) {
-		p := FormatAsIAMPolicy(events)
+	t.Run("Prints a IAMPolicy as a correctly formatted string", func(t *testing.T) {
+		p := FormatAsIAMIAMPolicy(events)
 		got, err := p.String()
 		assert.NoError(t, err)
 		assert.Equal(t, got, policyFixture)
