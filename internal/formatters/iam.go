@@ -10,8 +10,8 @@ import (
 )
 
 type IAMPolicy struct {
-	Version            string                `json:"Version"`
-	IAMPolicyStatement []*IAMPolicyStatement `json:"IAMPolicyStatement"`
+	Version    string                `json:"Version"`
+	Statements []*IAMPolicyStatement `json:"IAMPolicyStatement"`
 }
 
 type IAMPolicyStatement struct {
@@ -42,8 +42,8 @@ func FormatAsIAMPolicy(events []*cloudtrail.Event) *IAMPolicy {
 	uniqSt := uniq(allSt)
 	group := group(uniqSt)
 	return &IAMPolicy{
-		Version:            "2012-10-17",
-		IAMPolicyStatement: group,
+		Version:    "2012-10-17",
+		Statements: group,
 	}
 }
 
